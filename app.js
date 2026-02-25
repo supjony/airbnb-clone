@@ -1,14 +1,17 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const cors = require("cors");
 require("dotenv").config(); // Load environment variables
 const app = express();
 
 // ----------------------
 // Middleware
 // ----------------------
-app.use(cors()); // Enable CORS for dev
+if (process.env.NODE_ENV !== "production") {
+  const cors = require("cors");
+  app.use(cors()); // Enable CORS in development
+}
+
 app.use(express.json()); // Parse JSON requests
 
 // ----------------------
@@ -33,8 +36,8 @@ if (process.env.NODE_ENV === "production") {
   if (fs.existsSync(clientBuildPath)) {
     app.use(express.static(clientBuildPath));
 
-    // Catch-all route for React
-    app.get("*", (req, res) => {
+    // Catch-all route for React (Express 5 safe)
+    app.get(/^\/(?!api).*/, (req, res) => {
       res.sendFile(path.join(clientBuildPath, "index.html"));
     });
   } else {
