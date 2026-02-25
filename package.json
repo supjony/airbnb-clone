@@ -9,11 +9,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "postinstall": "cd client && npm install && npm run build"
+    "postinstall": "npm --prefix client install && npm --prefix client run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",

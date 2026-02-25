@@ -1,9 +1,12 @@
 const express = require("express");
 const path = require("path");
 require('dotenv').config(); // load environment variables
+
 const app = express();
 
-// Middleware to parse JSON
+// ----------------------
+// Middleware
+// ----------------------
 app.use(express.json());
 
 // ----------------------
@@ -20,18 +23,22 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
 
 // ----------------------
-// Serve React frontend (works for Render)
+// Serve React frontend (production only)
 // ----------------------
-const clientBuildPath = path.join(__dirname, 'client', 'build');
-app.use(express.static(clientBuildPath));
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, 'client', 'build');
+  app.use(express.static(clientBuildPath));
 
-// This must be AFTER API routes to prevent conflicts
-app.get('*', (req, res) => {
-  res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
+  // Catch-all route to serve index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+}
 
 // ----------------------
 // Start server
 // ----------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = app; // optional, useful for testing
