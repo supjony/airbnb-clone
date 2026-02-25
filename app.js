@@ -1,38 +1,47 @@
 const express = require("express");
 const path = require("path");
-require('dotenv').config(); // load environment variables
-
+const fs = require("fs");
+const cors = require("cors");
+require("dotenv").config(); // Load environment variables
 const app = express();
 
 // ----------------------
 // Middleware
 // ----------------------
-app.use(express.json());
+app.use(cors()); // Enable CORS for dev
+app.use(express.json()); // Parse JSON requests
 
 // ----------------------
-// Import API routes
+// API Routes
 // ----------------------
-const userRoutes = require('./routes/users');
-const spotRoutes = require('./routes/spots');
-const bookingRoutes = require('./routes/bookings');
-const reviewRoutes = require('./routes/reviews');
+const userRoutes = require("./routes/users");
+const spotRoutes = require("./routes/spots");
+const bookingRoutes = require("./routes/bookings");
+const reviewRoutes = require("./routes/reviews");
 
-app.use('/api/users', userRoutes);
-app.use('/api/spots', spotRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/spots", spotRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // ----------------------
-// Serve React frontend (production only)
+// Serve React frontend (Production only)
 // ----------------------
-if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.join(__dirname, 'client', 'build');
-  app.use(express.static(clientBuildPath));
+if (process.env.NODE_ENV === "production") {
+  const clientBuildPath = path.join(__dirname, "client", "build");
 
-  // Catch-all route to serve index.html
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
-  });
+  if (fs.existsSync(clientBuildPath)) {
+    app.use(express.static(clientBuildPath));
+
+    // Catch-all route for React
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(clientBuildPath, "index.html"));
+    });
+  } else {
+    console.warn(
+      "Client build folder not found. React app will not be served."
+    );
+  }
 }
 
 // ----------------------
@@ -40,5 +49,3 @@ if (process.env.NODE_ENV === 'production') {
 // ----------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-module.exports = app; // optional, useful for testing
